@@ -1,144 +1,92 @@
 # Nanopore_planning
-Nanopore_planing
 
-Here’s a cleaned-up and properly structured **analysis pipeline for Oxford Nanopore long-read transcriptomics** designed for implementation in GitHub:
+# Oxford Nanopore Long-Read Transcriptomics Pipeline
 
----
-
-### 🧬 **Oxford Nanopore Long-Read Transcriptomics Pipeline**
+## Overview
 This pipeline processes Oxford Nanopore sequencing data for transcriptomics analysis, including quality control, alignment, variant calling, fusion detection, and gene expression quantification.
 
----
+## Features
+- Adapters trimming and quality filtering
+- Alignment to reference genome
+- Variant calling
+- Fusion transcript detection
+- Gene expression quantification
 
-#### **1. Setup**
-- Import necessary modules:
-    ```python
-    from pathlib import Path
-    from Bio import SeqIO
-    import pandas as pd
-    import numpy as np
-    ```
-- Define paths:
-    ```python
-    path_to_data = Path('/path/to/your/data')
-    seq_file = path_to_data / 'seq_file.fq'
-    barcode_file = path_to_data / 'barcodes.tsv'
-    reference_genome = Path('/path/to/reference/hg38.fa')
-    output_dir = Path('/path/to/output')
-    ```
+## Requirements
+### Hardware
+- Linux/Unix-based system
+- At least 16GB RAM (adjust for large datasets)
+- Sufficient storage for input/output files
 
----
+### Software
+- Python (3.8+)
+- Tools: STAR-Fusion, Salmon, Nanopolish, samtools
+- Python packages: `Bio`, `pandas`, `numpy`, `pysam`
 
-#### **2. Data Import**
-- Parse sequencing reads:
-    ```python
-    reads = SeqIO.parse(str(seq_file), 'fastq')
-    barcodes = pd.read_csv(barcode_file, sep='\t')
+## Installation
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/yourusername/oxford-nanopore-pipeline.git
+    cd oxford-nanopore-pipeline
     ```
 
----
+2. Install dependencies:
+    - Using pip:
+      ```bash
+      pip install -r requirements.txt
+      ```
+    - OR using Docker (recommended, see below).
 
-#### **3. Read Filtering**
-- Remove adapters, trim low-quality bases, and filter low-complexity reads:
-    ```python
-    from nanopolish import Adapter
-
-    adapter = Adapter()
-    trimmed_reads = [
-        adapter.trim(read) for read in reads
-    ]
-    filtered_reads = [
-        read for read in trimmed_reads if adapter.is_high_quality(read)
-    ]
+3. Ensure required tools are installed and in the system PATH:
+    ```bash
+    sudo apt-get install star salmon nanopolish samtools
     ```
 
----
+## Usage
+1. Place your input files in the `data/` directory:
+   - `seq_file.fq`: Sequencing data in FASTQ format.
+   - `barcodes.tsv`: Barcode information.
+   - `hg38.fa`: Reference genome file.
 
-#### **4. Alignment**
-- Align filtered reads to the reference genome:
-    ```python
-    from pysam import AlignmentFile, FastaFile
+2. Modify paths in the `pipeline.py` script to match your directory structure.
 
-    alignment_output = output_dir / 'aligned.bam'
-    with FastaFile(str(reference_genome)) as ref:
-        with AlignmentFile(str(alignment_output), "wb", reference_filename=str(reference_genome)) as bam:
-            for read in filtered_reads:
-                bam.write(read)
+3. Run the pipeline:
+    ```bash
+    python pipeline.py
     ```
 
----
+4. Outputs:
+   - Filtered reads, aligned BAM files, VCF files for variants, fusion results, and expression quantification matrix.
 
-#### **5. Variant Calling**
-- Identify genomic variants:
-    ```python
-    from pysam import VariantFile
-
-    variant_output = output_dir / 'variants.vcf'
-    with VariantFile(str(alignment_output)) as bam:
-        with VariantFile(str(variant_output), 'w') as vcf:
-            for variant in bam.fetch():
-                vcf.write(variant)
+## Docker Usage
+For reproducibility, use the provided Dockerfile:
+1. Build the Docker image:
+    ```bash
+    docker build -t nanopore-pipeline .
     ```
 
----
-
-#### **6. Fusion Detection**
-- Detect fusion transcripts using a specialized tool:
-    ```python
-    from subprocess import run
-
-    fusion_output = output_dir / 'fusion_results'
-    run([
-        'STAR-Fusion',
-        '--genome_lib_dir', str(reference_genome),
-        '--output_dir', str(fusion_output),
-        '--input_bam', str(alignment_output)
-    ])
+2. Run the pipeline in a container:
+    ```bash
+    docker run --rm -v $(pwd):/app nanopore-pipeline
     ```
 
----
+## Pipeline Workflow
+1. Data Import
+2. Read Filtering
+3. Alignment to Reference Genome
+4. Variant Calling
+5. Fusion Detection
+6. Gene Expression Quantification
+7. Results Summarization
 
-#### **7. Gene Expression Quantification**
-- Quantify gene expression levels:
-    ```python
-    from subprocess import run
+## Contributing
+Feel free to submit pull requests or open issues for any bugs or feature requests.
 
-    quant_output = output_dir / 'quant_results'
-    run([
-        'salmon', 'quant',
-        '-i', str(reference_genome),
-        '-l', 'A',
-        '-r', str(seq_file),
-        '-o', str(quant_output)
-    ])
-    ```
+## License
+[MIT License](LICENSE)
 
----
+## Contact
+For questions or issues, contact `yourname@example.com`.
 
-#### **8. Results Summary**
-- Aggregate results into a summary report:
-    ```python
-    summary = {
-        "Total Reads": len(list(reads)),
-        "Filtered Reads": len(filtered_reads),
-        "Variants Identified": sum(1 for _ in VariantFile(str(variant_output))),
-        "Fusions Detected": len(list(fusion_output.glob('*fusion*'))),
-    }
-    pd.DataFrame([summary]).to_csv(output_dir / 'summary.csv', index=False)
-    ```
 
----
 
-#### **9. Notes**
-- Ensure all tools (e.g., `STAR-Fusion`, `Salmon`, etc.) are installed and accessible in the system PATH.
-- Adjust paths and parameters to match your dataset and computational resources.
-- Test the pipeline on a subset of data before full-scale implementation.
-
----
-
-### GitHub Integration
-- Add this as a script (`pipeline.py`) in your repository.
-- Include a `README.md` with instructions for dependencies, setup, and execution.
-- Optionally, create a Docker container for reproducibility.
-
-Would you like an example `README.md` or Dockerfile to complement this pipeline?
