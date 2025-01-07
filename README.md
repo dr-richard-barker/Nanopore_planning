@@ -2,6 +2,22 @@
 
 # Oxford Nanopore Long-Read Transcriptomics Pipeline
 
+Required fils that need to synthsis "Results|
+{'FASTQ File': '/mnt/data/example_input_files/seq_file.fq',
+ 'Barcode File': '/mnt/data/example_input_files/barcodes.tsv',
+ 'Reference Genome': '/mnt/data/example_input_files/hg38.fa'}
+The example input files have been created successfully. Here are their details:
+
+**FASTQ File:** seq_file.fq
+Contains sample sequence reads in FASTQ format.
+
+**Barcode File:** barcodes.tsv
+Includes sample identifiers and corresponding barcodes.
+
+**Reference Genome:** hg38.fa
+Example reference genome in FASTA format.
+
+
 ## Overview
 This pipeline processes Oxford Nanopore sequencing data for transcriptomics analysis, including quality control, alignment, variant calling, fusion detection, and gene expression quantification.
 
